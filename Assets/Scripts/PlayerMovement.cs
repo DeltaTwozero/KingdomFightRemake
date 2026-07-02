@@ -29,6 +29,7 @@ public class NetworkPlayerController : NetworkBehaviour
     [SerializeField] private Camera playerCamera;
     [SerializeField] private Transform interactionOrigin;
 
+
     // ─── Private state ─────────────────────────────────────────────────────────
 
     private PlayerInputActions _input;
