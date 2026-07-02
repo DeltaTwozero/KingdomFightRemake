@@ -19,7 +19,12 @@ public class MainMenuController : MonoBehaviour
     [SerializeField] private Button toggleCodeVisibilityButton;
     [SerializeField] private Button copyCodeButton;
     [SerializeField] private Button cancelHostButton;
+    [SerializeField] private Button onlineBackButton;
     [SerializeField] private TMP_Text statusText;
+
+    [Header("Settings Panel")]
+    [SerializeField] private Toggle sprintToggle;
+    [SerializeField] private Toggle inviteCodePrivacyToggle;
 
     private const string GameScene = "NetcodeTest";
     private const string OfflineScene = "Offline_gameplay";
@@ -68,15 +73,17 @@ public class MainMenuController : MonoBehaviour
         SetStatus("Creating lobby...");
 
         // Hide join-related elements immediately — this player is hosting, not joining.
+        // Back is also hidden since leaving mid-host would strand the lobby/network state.
         joinButton.gameObject.SetActive(false);
         joinCodeInput.gameObject.SetActive(false);
         hostButton.gameObject.SetActive(false);
+        onlineBackButton.gameObject.SetActive(false);
 
         LobbyManager.Instance.OnJoinCodeReady += code =>
         {
             _currentJoinCode = code;
-            _joinCodeVisible = false;
-            joinCodeDisplay.text = HiddenCodeText;
+            _joinCodeVisible = !PlayerSettings.Privacy.HideInviteCodeByDefault;
+            joinCodeDisplay.text = _joinCodeVisible ? $"Join Code: {code}" : HiddenCodeText;
             joinCodeDisplay.gameObject.SetActive(true);
             toggleCodeVisibilityButton.gameObject.SetActive(true);
             copyCodeButton.gameObject.SetActive(true);
@@ -161,6 +168,16 @@ public class MainMenuController : MonoBehaviour
         ShowMain();
     }
 
+    public void OnSprintToggleChanged(bool value)
+    {
+        PlayerSettings.PlayerControls.ToggleSprint = value;
+    }
+
+    public void OnInviteCodePrivacyToggleChanged(bool value)
+    {
+        PlayerSettings.Privacy.HideInviteCodeByDefault = value;
+    }
+
     // ─── Helpers ────────────────────────────────────────────────────────────────
 
     private void ShowMain()
@@ -179,6 +196,7 @@ public class MainMenuController : MonoBehaviour
         hostButton.gameObject.SetActive(true);
         joinButton.gameObject.SetActive(true);
         joinCodeInput.gameObject.SetActive(true);
+        onlineBackButton.gameObject.SetActive(true);
         joinCodeDisplay.gameObject.SetActive(false);
         toggleCodeVisibilityButton.gameObject.SetActive(false);
         copyCodeButton.gameObject.SetActive(false);
@@ -193,6 +211,9 @@ public class MainMenuController : MonoBehaviour
         mainPanel.SetActive(false);
         onlinePanel.SetActive(false);
         settingsPanel.SetActive(true);
+
+        sprintToggle.SetIsOnWithoutNotify(PlayerSettings.PlayerControls.ToggleSprint);
+        inviteCodePrivacyToggle.SetIsOnWithoutNotify(PlayerSettings.Privacy.HideInviteCodeByDefault);
     }
 
     private void SetStatus(string msg) => statusText.text = msg;
