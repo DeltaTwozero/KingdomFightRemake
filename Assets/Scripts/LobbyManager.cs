@@ -85,6 +85,17 @@ public class LobbyManager : MonoBehaviour
         }
     }
 
+    public void StartOffline()
+    {
+        if (NetworkManager.Singleton == null)
+            throw new InvalidOperationException("NetworkManager.Singleton is null — no NetworkManager present in the scene.");
+
+        // Reuses the same server-authoritative spawn flow as online mode
+        // (see SpawnPointManager) so gameplay behaves identically offline.
+        NetworkManager.Singleton.ConnectionApprovalCallback = ApproveWithoutPlayerObject;
+        NetworkManager.Singleton.StartHost();
+    }
+
     public async Task JoinAsync(string joinCode)
     {
         try

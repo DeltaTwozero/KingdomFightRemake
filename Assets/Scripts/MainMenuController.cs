@@ -22,6 +22,7 @@ public class MainMenuController : MonoBehaviour
     [SerializeField] private TMP_Text statusText;
 
     private const string GameScene = "NetcodeTest";
+    private const string OfflineScene = "Offline_gameplay";
     private const string HiddenCodeText = "Join Code: ••••••";
 
     private string _currentJoinCode;
@@ -36,7 +37,8 @@ public class MainMenuController : MonoBehaviour
 
     public void OnOfflineClicked()
     {
-        SceneManager.LoadScene(GameScene);
+        LobbyManager.Instance.StartOffline();
+        NetworkManager.Singleton.SceneManager.LoadScene(OfflineScene, LoadSceneMode.Single);
     }
 
     public void OnOnlineClicked()
@@ -202,5 +204,4 @@ public class MainMenuController : MonoBehaviour
         joinCodeInput.interactable = interactable;
     }
 
-    private void LoadGame() => SceneManager.LoadScene(GameScene);
 }
