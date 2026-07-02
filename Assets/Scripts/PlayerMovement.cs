@@ -10,6 +10,7 @@ public class NetworkPlayerController : NetworkBehaviour
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float sprintSpeed = 8f;
     [SerializeField] private float jumpHeight = 1.5f;
     [SerializeField] private float gravityMultiplier = 2f;
 
@@ -28,6 +29,7 @@ public class NetworkPlayerController : NetworkBehaviour
     [Header("References")]
     [SerializeField] private Camera playerCamera;
     [SerializeField] private Transform interactionOrigin;
+    [SerializeField] private Animator animator;
 
 
     // ─── Private state ─────────────────────────────────────────────────────────
@@ -39,6 +41,12 @@ public class NetworkPlayerController : NetworkBehaviour
     private Vector3 _velocity;
     private float _cameraPitch;
     private float _footstepTimer;
+    private bool _isSprintToggledOn;
+
+    private static readonly int SpeedParam = Animator.StringToHash("Speed");
+    private static readonly int IsGroundedParam = Animator.StringToHash("isGrounded");
+    private static readonly int JumpParam = Animator.StringToHash("Jump");
+    private static readonly int InteractParam = Animator.StringToHash("Interact");
 
     // ─── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -46,6 +54,7 @@ public class NetworkPlayerController : NetworkBehaviour
     {
         _cc = GetComponent<CharacterController>();
         _audioSource = GetComponentInChildren<AudioSource>();
+        if (animator == null) animator = GetComponentInChildren<Animator>();
         _input = new PlayerInputActions();
     }
 
@@ -126,11 +135,27 @@ public class NetworkPlayerController : NetworkBehaviour
         Vector3 move  = transform.right * input.x + transform.forward * input.y;
 
         if (_input.Player.Jump.WasPressedThisFrame() && grounded)
+        {
             _velocity.y = Mathf.Sqrt(jumpHeight * 2f * Mathf.Abs(Physics.gravity.y));
+            if (animator != null) animator.SetTrigger(JumpParam);
+        }
 
         _velocity.y += Physics.gravity.y * gravityMultiplier * Time.deltaTime;
 
-        _cc.Move((move * moveSpeed + _velocity) * Time.deltaTime);
+        bool isSprinting = IsSprinting();
+        float currentSpeed = isSprinting ? sprintSpeed : moveSpeed;
+
+        _cc.Move((move * currentSpeed + _velocity) * Time.deltaTime);
+
+        if (animator != null)
+        {
+            // Normalized 0-1 for walking, 1-2 for sprinting — decoupled from actual
+            // moveSpeed/sprintSpeed values so animation thresholds stay stable
+            // regardless of how those are tuned.
+            float animSpeed = move.magnitude * (isSprinting ? 2f : 1f);
+            animator.SetFloat(SpeedParam, animSpeed);
+            animator.SetBool(IsGroundedParam, grounded);
+        }
 
         if (grounded && move.sqrMagnitude > 0.01f)
         {
@@ -147,6 +172,20 @@ public class NetworkPlayerController : NetworkBehaviour
         }
     }
 
+    // ─── Sprint ────────────────────────────────────────────────────────────────
+
+    private bool IsSprinting()
+    {
+        if (PlayerSettings.PlayerControls.ToggleSprint)
+        {
+            if (_input.Player.Sprint.WasPressedThisFrame())
+                _isSprintToggledOn = !_isSprintToggledOn;
+            return _isSprintToggledOn;
+        }
+
+        return _input.Player.Sprint.IsPressed();
+    }
+
     // ─── Interaction ───────────────────────────────────────────────────────────
 
     private void HandleInteraction()
@@ -160,6 +199,8 @@ public class NetworkPlayerController : NetworkBehaviour
         {
             IInteractable interactable = hit.collider.GetComponentInParent<IInteractable>();
             if (interactable == null) return;
+
+            if (animator != null) animator.SetTrigger(InteractParam);
 
             NetworkObject netObj = hit.collider.GetComponentInParent<NetworkObject>();
             if (netObj != null)
