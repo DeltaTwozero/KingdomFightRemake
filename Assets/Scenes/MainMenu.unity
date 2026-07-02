@@ -1402,6 +1402,7 @@ GameObject:
   - component: {fileID: 420537823}
   - component: {fileID: 420537825}
   - component: {fileID: 420537824}
+  - component: {fileID: 420537826}
   m_Layer: 0
   m_Name: Title
   m_TagString: Untagged
@@ -1448,7 +1449,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Kingdom Fight
+  m_text: Kingdom Fight Remake
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1528,6 +1529,24 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 420537822}
   m_CullTransparentMesh: 1
+--- !u!114 &420537826
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 420537822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc561d24b183dfc44b590c7eb7b61e8f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RainbowText
+  targetText: {fileID: 420537824}
+  substring: Remake
+  cycleSpeed: 1
+  huePerCharacter: 0.08
+  saturation: 1
+  brightness: 1
 --- !u!1 &459351513
 GameObject:
   m_ObjectHideFlags: 0
